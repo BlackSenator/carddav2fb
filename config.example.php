@@ -6,9 +6,10 @@ $config = [
         'id'        => 0,                                              // only "0" can store quickdial and vanity numbers
         'name'      => 'Telefonbuch',
         'imagepath' => 'file:///var/InternerSpeicher/[YOURUSBSTICK]/FRITZ/fonpix/', // mandatory if you use the -i option
-    ],
+        'forcedupload' => true,             // true  = CardDAV contacts overwrite phonebook on Fritz!Box
+    ],                                      // false = newer entries will send as VCF via eMail (-> reply)
 
-    // or server (is considered with the run and download command)
+    // server (is considered with the run and download command)
     'server' => [
         [
             'url' => 'https://...',
@@ -29,7 +30,7 @@ $config = [
 */
     ],
 
-    // or fritzbox
+    // fritzbox
     'fritzbox' => [
         'url' => 'http://fritz.box',
         'user' => '',
@@ -39,7 +40,9 @@ $config = [
             // '613',               // internal number must be in the range '610' to '615' (maximum of DECT devices)
         ],
         'quickdial_alias' => false, // if true, than vanity names ("JON") become quickdial aliases ("Jon") in the background image
+        'fritzadr' => '/[YOURUSBSTICK]/FRITZ/mediabox',   // if not empty FRITZadr will be written to this location
         'http' => [                 // http client options are directly passed to Guzzle http client
+            // 'debug' => true,
             // 'verify' => false,   // uncomment to disable certificate check
         ],
         'ftp' => [
@@ -47,6 +50,20 @@ $config = [
             'disabled' => false,    // set true if your FRITZ!Box does not support ftp - e.g. 7412
         ],
     ],
+
+    /*
+    'reply' => [                                                    // mandatory if you use "forcedupload" < 3 !
+        'url'      => 'smtp...',
+        'port'     => 587,                                          // alternativ 465
+        'secure'   => 'tls',                                        // alternativ 'ssl'
+        'user'     => '[USER]',                                     // your sender email adress e.g. account
+        'password' => '[PASSWORD]',
+        'receiver' => 'blacksenator@github.com',                    // your email adress to receive the secured contacts
+        'debug'    => 0,                                            // 0 = off (for production use)
+                                                                    // 1 = client messages
+                                                                    // 2 = client and server messages
+    ],
+    */
 
     'filters' => [
         'include' => [                                          // if empty include all by default

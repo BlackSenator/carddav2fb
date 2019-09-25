@@ -10,6 +10,8 @@ use Andig\FritzBox\BackgroundImage;
 use Andig\FritzBox\Restorer;
 use Sabre\VObject\Document;
 use \SimpleXMLElement;
+use Andig\FritzAdr\fritzadr;
+use Andig\ReplyMail\replymail;
 
 // see: https://avm.de/service/fritzbox/fritzbox-7490/wissensdatenbank/publication/show/300_Hintergrund-und-Anruferbilder-in-FRITZ-Fon-einrichten/
 define("MAX_IMAGE_COUNT", 150);
@@ -711,4 +713,82 @@ function mergeAttributes(SimpleXMLElement $xmlTargetPhoneBook, array $attributes
     $xmlTargetPhoneBook = $restore->setPhonebookData($xmlTargetPhoneBook, $attributes);
 
     return $xmlTargetPhoneBook;
+}
+
+/**
+ * this function checked if all phone numbers from the FRITZ!Box phonebook are
+ * included in the new phonebook. If not so the number(s) and type(s) resp.
+ * vip flag are compiled in a vCard and sent as a vcf file with the name as
+ * filename will be send as an email attachement
+ *
+ * @param SimpleXMLElement $oldPhonebook
+ * @param SimpleXMLElement $newPhonebook
+ * @param array $config
+ * @return int
+ */
+function checkUpdates($oldPhonebook, $newPhonebook, $config)
+{
+    $i = 0;
+    if (!isset($config['reply'])) {
+        return $i;
+    } else {
+        $reply = $config['reply'];
+    }
+    $eMailer = new replymail;
+    $eMailer->setSMTPcredentials($reply);
+    // check if entries are not included in the intended upload
+    foreach ($oldPhonebook->phonebook->contact as $contact) {
+        $numbers = [];                                              // container for ew numbers per contact
+        foreach ($contact->telephony->number as $number) {
+            if ((substr($number, 0, 1) == '*') || (substr($number, 0, 1) == '#')) {  // skip internal numbers
+                continue;
+            }
+            $queryString = sprintf('//telephony[number = "%s"]', (string)$number);    // assemble search string
+            if (!$newPhonebook->xpath($queryString)) {              // not found in upload: entry to save!
+                $numbers[(string)$number] = (string)$number['type'];
+            }
+        }
+        if (count($numbers)) {                                      // one or more new numbers found
+            // fetch data
+            $name  = $contact->person->realName;
+            $email = (string)$contact->telephony->services->email;
+            $vip   = $contact->category;
+            // assemble vCard from new entry(s)
+            $new_vCard = $eMailer->getvCard($name, $numbers, $email, $vip);
+            // send new entry as vCard to designated reply adress
+            if ($eMailer->sendReply($config['phonebook']['name'], $new_vCard, $name . '.vcf')) {
+                $i++;
+            }
+        }
+    }
+    return $i;
+}
+
+/**
+ * if $config['fritzbox']['fritzadr'] is set, than all contact (names) with a fax number
+ * are copied into a dBase III database fritzadr.dbf for FRITZ!fax purposes
+ *
+ * @param SimpleXMLElement $xmlPhonebook phonebook in FRITZ!Box format
+ * @param array $config
+ * @return int number of records written to fritzadr.dbf
+ */
+function uploadFritzAdr(SimpleXMLElement $xmlPhonebook, $config)
+{
+    // Prepare FTP connection
+    $secure = @$config['plainFTP'] ? $config['plainFTP'] : false;
+    $ftp_conn = getFtpConnection($config['url'], $config['user'], $config['password'], $config['fritzadr'], $secure);
+    // open a fast in-memory file stream
+    $memstream = fopen('php://memory', 'r+');
+    $converter = new fritzadr;
+    $faxContacts = $converter->getFAXcontacts($xmlPhonebook);       // extracting
+    if (count($faxContacts)) {
+        fputs($memstream, $converter->getdBaseData($faxContacts));
+        rewind($memstream);
+        if (!ftp_fput($ftp_conn, 'fritzadr.dbf', $memstream, FTP_BINARY)) {
+            error_log("Error uploading fritzadr.dbf!" . PHP_EOL);
+        }
+    }
+    fclose($memstream);
+    ftp_close($ftp_conn);
+    return count($faxContacts);
 }

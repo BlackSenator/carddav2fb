@@ -104,6 +104,24 @@ class RunCommand extends Command
             uploadBackgroundImage($savedAttributes, $this->config['fritzbox']);
         }
 
+        // saving newer phonebook numbers
+        if ($this->config['phonebook']['forcedupload'] == false) {
+            error_log('Checking to back up newer contacts of the Fritz!Box');
+            $i = checkUpdates($recentPhonebook, $xmlPhonebook, $this->config);
+            if ($i) {
+                error_log(sprintf("Saved %d contact(s)", $i));
+            }
+        }
+
+        // uploading fax adressbook
+        if (isset($this->config['fritzbox']['fritzadr'])) {
+            error_log('Selecting and uploading fax number(s) for FRITZ!fax');
+            $i = uploadFritzAdr($xmlPhonebook, $this->config['fritzbox']);
+            if ($i) {
+                error_log(sprintf("Uploaded %d fax number entries into fritzadr.dbf", $i));
+            }
+        }
+
         return 0;
     }
 
