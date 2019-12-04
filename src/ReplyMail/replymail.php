@@ -98,7 +98,12 @@ class replymail
     {
         $this->mail->clearAttachments();
         $this->mail->Subject = 'Newer contact was found in phonebook: ' . $phonebook;  //Set the subject line
-        $this->mail->Body = 'Add this contact to your CardDAV server:';
+        $this->mail->Body = <<<EOD
+carddav2fb found the attached contact in your Fritz!Box telephone book, but not in your upload data.
+
+Please check if you would like to keep this information and maybe add it to your contacts on the CardDAV server:
+
+EOD;
         $this->mail->addStringAttachment($attachment, $label, 'quoted-printable', 'text/x-vcard');
         if (!$this->mail->send()) {                                     // send the message, check for errors
             echo 'Mailer Error: ' . $this->mail->ErrorInfo;
