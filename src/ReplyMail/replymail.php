@@ -13,8 +13,6 @@ namespace Andig\ReplyMail;
  */
 
 use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-use Sabre\VObject\Document;
 use Sabre\VObject;
 
 class replymail
