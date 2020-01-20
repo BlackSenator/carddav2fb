@@ -118,12 +118,32 @@ $config = [
         /**
          * 'phoneReplaceCharacters' conversions are processed consecutively. Order decides!
          */
-        'phoneReplaceCharacters' => [
-            '+49' => '',  // router is usually operated in 'DE; '0049' could also be part of a phone number
-            '('   => '',
-            ')'   => '',
-            '/'   => '',
-            '-'   => ''
+        'phoneReplaceCharacters' => [          // are processed consecutively. Order decides!
+            '('     => '',                     // delete separators
+            ')'     => '',
+            '/'     => '',
+            '-'     => '',
+            ' '     => '',
+            '+49 1'  => '01',                   // domestic numbers without area code
+            '+49 2'  => '02',
+            '+49 3'  => '03',
+            '+49 4'  => '04',
+            '+49 5'  => '05',
+            '+49 6'  => '06',
+            '+49 7'  => '07',
+            '+49 8'  => '08',
+            '+49 9'  => '09',
+            '+491'  => '01',
+            '+492'  => '02',
+            '+493'  => '03',
+            '+494'  => '04',
+            '+495'  => '05',
+            '+496'  => '06',
+            '+497'  => '07',
+            '+498'  => '08',
+            '+499'  => '09',
+            '+49'   => '',
+            '+'     => '00'                    // normalize foreign numbers
         ]
     ]
 ];

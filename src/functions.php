@@ -740,7 +740,9 @@ function checkUpdates($oldPhonebook, $newPhonebook, $config)
     foreach ($oldPhonebook->phonebook->contact as $contact) {
         $numbers = [];                                              // container for ew numbers per contact
         foreach ($contact->telephony->number as $number) {
-            if ((substr($number, 0, 1) == '*') || (substr($number, 0, 1) == '#')) {  // skip internal numbers
+            if ((substr($number, 0, 1) == '*') ||                   // skip internal numbers
+                (substr($number, 0, 1) == '#') ||
+                (strpos($number, '00@hd-telefonie.avm.de'))) {
                 continue;
             }
             $queryString = sprintf('//telephony[number = "%s"]', (string)$number);    // assemble search string
