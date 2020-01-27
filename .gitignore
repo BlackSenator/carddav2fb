@@ -5,3 +5,5 @@
 php-cs-fixer.config
 config.cron
 cache
+/workbench
+/carddav2fb.wiki

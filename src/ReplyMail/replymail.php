@@ -32,15 +32,21 @@ class replymail
      *
      * @param string $name
      * @param array $numbers
-     * @param string $email
+     * @param array $emails
      * @param string $vip
      * @return string
      */
-    public function getvCard($name, $numbers, $email = '', $vip = '')
+    public function getvCard(string $name, array $numbers, array $emails = [], string $vip = '')
     {
-        $this->vCard = new VObject\Component\VCard(['FN' => $name]);
+        $this->vCard = new VObject\Component\VCard;
         $parts = explode(', ', $name);
-        count($parts) == 2 ? $this->vCard->add('N', [$parts[0], $parts[1]]) : $this->vCard->add('ORG', $name);
+        if (count($parts) == 2) {
+            $this->vCard->add('FN', $parts[1] . ' ' . $parts[0]);
+            $this->vCard->add('N', [$parts[0], $parts[1]]);
+        } else {
+            $this->vCard->add('FN', $name);
+            $this->vCard->add('ORG', $name);
+        }
         foreach ($numbers as $number => $type) {
             switch ($type) {
                 case 'fax_work':
@@ -56,14 +62,14 @@ class replymail
                     break;
             }
         }
-        if (!empty($email)) {
+        foreach ($emails as $email) {
             $this->vCard->add('EMAIL', $email);
         }
         if ($vip == 1) {
             $this->vCard->add('NOTE', 'This contact was marked as important.\nSuggestion: assign to a VIP category or group.');
         }
 
-        return $this->vCard->serialize();
+        return $this->vCard;
     }
 
     /**

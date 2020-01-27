@@ -104,7 +104,7 @@ class RunCommand extends Command
 
         // saving newer phonebook numbers
         if ($this->config['phonebook']['forcedupload'] == false) {
-            error_log('Checking to back up newer contacts of the Fritz!Box');
+            error_log('Checking to back up newer contacts of the FRITZ!Box');
             $i = checkUpdates($recentPhonebook, $xmlPhonebook, $this->config);
             if ($i) {
                 error_log(sprintf("Saved %d contact(s)", $i));

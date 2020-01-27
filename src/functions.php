@@ -716,6 +716,57 @@ function mergeAttributes(SimpleXMLElement $xmlTargetPhoneBook, array $attributes
 }
 
 /**
+ * convert phonebook to VCF
+ *
+ * @param SimpleXMLElement $phoneBook
+ * @param bool $images
+ * @param array $config
+ * @return string
+ */
+function phonebookToVCF(SimpleXMLElement $phoneBook, bool $images = false, array $config)
+{
+    $vcf = '';
+    $saver = new replymail;
+    if ($images) {
+        $secure = @$config['plainFTP'] ? $config['plainFTP'] : false;
+        $ftp_conn = getFtpConnection($config['url'], $config['user'], $config['password'], '/', $secure);
+    }
+    foreach ($phoneBook->phonebook->contact as $contact) {
+        // fetch data basic data
+        $name = $contact->person->realName;
+        $numbers = [];
+        foreach ($contact->telephony->number as $number) {
+            $numbers[(string)$number] = (string)$number['type'];
+        }
+        $emails = [];
+        if (isset($contact->services->email)) {
+            foreach ($contact->services->email as $email) {
+                $emails[] = (string)$email;
+            }
+        }
+        $vip = $contact->category;
+        // assemble basic vCard
+        $vCard = $saver->getvCard($name, $numbers, $emails, $vip);
+        $vCard->UID = (string)$contact->carddav_uid;
+        if ($images && isset($contact->person->imageURL)) {
+            $memStream = fopen('php://memory', 'r+');               // use fast in-memory file stream
+            $imgLocation = strstr((string)$contact->person->imageURL, 'InternerSpeicher');
+            $imgLocation = str_replace('InternerSpeicher', '', $imgLocation);
+            if (ftp_fget($ftp_conn, $memStream, $imgLocation, FTP_BINARY)) {
+                rewind($memStream);
+                $contents = stream_get_contents($memStream);
+                $vCard->add('PHOTO', base64_encode($contents), ['TYPE' => 'JPEG', 'ENCODING' => 'b']);
+                fclose($memStream);
+            }
+        }
+        $vcf .= $vCard->serialize();
+    }
+    @ftp_close($ftp_conn);
+
+    return $vcf;
+}
+
+/**
  * this function checked if all phone numbers from the FRITZ!Box phonebook are
  * included in the new phonebook. If not so the number(s) and type(s) resp.
  * vip flag are compiled in a vCard and sent as a vcf file with the name as
@@ -752,13 +803,16 @@ function checkUpdates($oldPhonebook, $newPhonebook, $config)
         }
         if (count($numbers)) {                                      // one or more new numbers found
             // fetch data
+            $emails = [];
             $name  = $contact->person->realName;
-            $email = (string)$contact->telephony->services->email;
+            foreach ($contact->services->email as $email) {
+                $emails[] = (string)$email;
+            }
             $vip   = $contact->category;
             // assemble vCard from new entry(s)
-            $new_vCard = $eMailer->getvCard($name, $numbers, $email, $vip);
+            $new_vCard = $eMailer->getvCard($name, $numbers, $emails, $vip);
             // send new entry as vCard to designated reply adress
-            if ($eMailer->sendReply($config['phonebook']['name'], $new_vCard, $name . '.vcf')) {
+            if ($eMailer->sendReply($config['phonebook']['name'], $new_vCard->serialize(), $name . '.vcf')) {
                 $i++;
             }
         }
