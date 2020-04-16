@@ -112,7 +112,7 @@ class RunCommand extends Command
         }
 
         // uploading fax adressbook
-        if (isset($this->config['fritzbox']['fritzadr'])) {
+        if (isset($this->config['fritzbox']['fritzadr']) && !$ftpDisabled) {
             error_log('Selecting and uploading fax number(s) for FRITZ!fax');
             $i = uploadFritzAdr($xmlPhonebook, $this->config['fritzbox']);
             if ($i) {

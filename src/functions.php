@@ -728,7 +728,7 @@ function phonebookToVCF(SimpleXMLElement $phoneBook, bool $images = false, array
     $vcf = '';
     $saver = new replymail;
     if ($images) {
-        $secure = @$config['plainFTP'] ? $config['plainFTP'] : false;
+        $secure = $config['ftp']['plain'] ?? false;
         $ftp_conn = getFtpConnection($config['url'], $config['user'], $config['password'], '/', $secure);
     }
     foreach ($phoneBook->phonebook->contact as $contact) {
@@ -831,7 +831,7 @@ function checkUpdates($oldPhonebook, $newPhonebook, $config)
 function uploadFritzAdr(SimpleXMLElement $xmlPhonebook, $config)
 {
     // Prepare FTP connection
-    $secure = @$config['plainFTP'] ? $config['plainFTP'] : false;
+    $secure = $config['ftp']['plain'] ?? false;
     $ftp_conn = getFtpConnection($config['url'], $config['user'], $config['password'], $config['fritzadr'], $secure);
     // open a fast in-memory file stream
     $memstream = fopen('php://memory', 'r+');
@@ -845,6 +845,6 @@ function uploadFritzAdr(SimpleXMLElement $xmlPhonebook, $config)
         }
     }
     fclose($memstream);
-    ftp_close($ftp_conn);
+    @ftp_close($ftp_conn);
     return count($faxContacts);
 }
