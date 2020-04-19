@@ -52,7 +52,7 @@ $config = [
     ],
 
     /*
-    'reply' => [                                                    // mandatory if you use "forcedupload" < 3 !
+    'reply' => [                                                    // mandatory if you use "forcedupload" false !
         'url'      => 'smtp...',
         'port'     => 587,                                          // alternativ 465
         'secure'   => 'tls',                                        // alternativ 'ssl'
