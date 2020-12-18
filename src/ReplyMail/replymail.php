@@ -23,7 +23,7 @@ class replymail
     public function __construct()
     {
         date_default_timezone_set('Etc/UTC');
-        $this->mail = new PHPMailer;
+        $this->mail = new PHPMailer(true);
         $this->mail->CharSet = 'UTF-8';
     }
 
@@ -34,11 +34,12 @@ class replymail
      * @param array $numbers
      * @param array $emails
      * @param string $vip
-     * @return string
+     * @return Document
      */
     public function getvCard(string $name, array $numbers, array $emails = [], string $vip = '')
     {
         $this->vCard = new VObject\Component\VCard;
+        $this->vCard->VERSION = '3.0';          // the default VERSION:4.0 causes problems with umlauts at Apple
         $parts = explode(', ', $name);
         if (count($parts) == 2) {
             $this->vCard->add('FN', $parts[1] . ' ' . $parts[0]);

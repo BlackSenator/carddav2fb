@@ -7,6 +7,10 @@
         {
             "name": "andig",
             "email": "cpuidle@gmx.de"
+        },
+        {
+            "name": "blacksenator",
+            "email": "knuffyupdate@anasco.de"
         }
     ],
     "require": {
@@ -15,7 +19,7 @@
         "guzzlehttp/guzzle": "^7.0",
         "ringcentral/psr7": "^1.2",
         "sabre/vobject": "^4.0",
-        "phpmailer/phpmailer": "~6.1",
+        "phpmailer/phpmailer": "^6.2",
         "blacksenator/fritzdbf": "^1.0"
     },
     "autoload": {

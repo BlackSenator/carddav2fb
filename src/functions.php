@@ -805,8 +805,10 @@ function checkUpdates($oldPhonebook, $newPhonebook, $config)
             // fetch data
             $emails = [];
             $name  = $contact->person->realName;
-            foreach ($contact->services->email as $email) {
-                $emails[] = (string)$email;
+            if (isset($contact->services)) {
+                foreach ($contact->services->email as $email) {
+                    $emails[] = (string)$email;
+                }
             }
             $vip   = $contact->category;
             // assemble vCard from new entry(s)
