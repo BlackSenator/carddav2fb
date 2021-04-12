@@ -31,7 +31,7 @@ Additonal with this version (fork):
 
 ## Requirements
 
-* PHP >7.1 (`apt-get install php php-curl php-mbstring php-xml`)
+* PHP >7.3 or 8.0
 * Composer (follow the installation guide at https://getcomposer.org/download/)
 
 ## Installation
